@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:,">
+<title>Threat Intelligence &amp; Incident Response Professional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05080d;
+    --bg2:#070d16;
+    --panel:rgba(13,21,32,.82);
+    --panel-solid:#0d1520;
+    --line:#1a2d45;
+    --line-soft:#122036;
+    --ink:#dbe7f3;
+    --muted:#8fa3b8;
+    --faint:#5b7189;
+    --cyan:#00e5ff;
+    --violet:#a78bfa;
+    --green:#39ff14;
+    --orange:#ff6b35;
+    --radius:14px;
+  }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Sora",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:16px; line-height:1.6; overflow-x:hidden;
+  }
+  ::selection{ background:var(--cyan); color:#02141a; }
+  a{ color:var(--cyan); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+  .mono{ font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace; }
+
+  /* ---------- background layers ---------- */
+  #particles{ position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+  #matrixfx{ position:fixed; inset:0; width:100%; height:100%; z-index:60; pointer-events:none; opacity:0; transition:opacity .4s; }
+  .scanline{
+    position:fixed; left:0; right:0; height:120px; z-index:1; pointer-events:none;
+    background:linear-gradient(to bottom, transparent, rgba(0,229,255,.045), transparent);
+    animation:scan 9s linear infinite;
+  }
+  @keyframes scan{ 0%{ top:-15%; } 100%{ top:110%; } }
+  .spotlight{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(560px circle at var(--mx,50%) var(--my,20%), rgba(0,229,255,.07), transparent 65%);
+  }
+
+  /* ---------- custom cursor (fine pointers only) ---------- */
+  #cursor-dot,#cursor-ring{ position:fixed; top:0; left:0; z-index:200; pointer-events:none; border-radius:50%; display:none; }
+  #cursor-dot{ width:6px; height:6px; background:var(--cyan); transform:translate(-50%,-50%); }
+  #cursor-ring{ width:34px; height:34px; border:1px solid rgba(0,229,255,.55); transform:translate(-50%,-50%); transition:width .18s,height .18s,border-color .18s; }
+  #cursor-ring.grow{ width:56px; height:56px; border-color:var(--violet); }
+  @media (pointer:fine){
+    #cursor-dot,#cursor-ring{ display:block; }
+  }
+
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(5,8,13,.78); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .nav-inner{ max-width:1180px; margin:0 auto; padding:10px 20px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .nav-brand{ font-family:"JetBrains Mono",monospace; font-weight:700; font-size:15px; color:var(--ink); letter-spacing:.02em; }
+  .nav-brand span{ color:var(--cyan); }
+  .nav-links{ display:flex; gap:4px; flex-wrap:wrap; margin-left:auto; }
+  .nav-links a{
+    font-family:"JetBrains Mono",monospace; font-size:12.5px; color:var(--muted);
+    padding:6px 10px; border-radius:8px;
+  }
+  .nav-links a:hover{ color:var(--cyan); text-decoration:none; background:rgba(0,229,255,.07); }
+  .nav-links a::before{ content:"> "; color:var(--faint); }
+
+  main{ position:relative; z-index:2; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 20px; }
+
+  /* ---------- reveal on scroll (progressive enhancement only: content is
+     fully visible without it; the class just triggers count-ups) ---------- */
+  .rv{ }
+
+  /* ---------- hero ---------- */
+  .hero{ position:relative; padding:64px 0 72px; overflow:hidden; }
+  .hero::before{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      linear-gradient(rgba(0,229,255,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,.05) 1px, transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 30%, transparent 75%);
+            mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 30%, transparent 75%);
+  }
+  .hero-inner{ position:relative; }
+  .boot{
+    font-family:"JetBrains Mono",monospace; font-size:13px; color:var(--faint);
+    min-height:88px; margin-bottom:26px;
+  }
+  .boot .ok{ color:var(--green); }
+  .boot .cy{ color:var(--cyan); }
+  .boot p{ margin:0 0 3px; }
+  .handle{
+    font-family:"JetBrains Mono",monospace; font-size:15px; letter-spacing:.28em;
+    color:var(--cyan); text-transform:uppercase; margin:0 0 10px;
+  }
+  h1.glitch{
+    position:relative; margin:0 0 18px;
+    font-size:clamp(44px,8.5vw,104px); line-height:.98; font-weight:800; letter-spacing:-.015em;
+  }
+  h1.glitch .l2{
+    display:block;
+    background:linear-gradient(92deg, var(--cyan) 10%, var(--violet) 90%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  h1.glitch::before, h1.glitch::after{
+    content:attr(data-text); position:absolute; inset:0; opacity:0; pointer-events:none;
+  }
+  h1.glitch::before{ color:var(--cyan); animation:gl1 4.2s infinite steps(1); }
+  h1.glitch::after{ color:var(--orange); animation:gl2 4.2s infinite steps(1); }
+  @keyframes gl1{
+    0%,93%,100%{ opacity:0; transform:none; clip-path:inset(0 0 0 0); }
+    94%{ opacity:.75; transform:translate(-4px,2px); clip-path:inset(12% 0 55% 0); }
+    96%{ opacity:.75; transform:translate(3px,-1px); clip-path:inset(60% 0 8% 0); }
+    98%{ opacity:0; }
+  }
+  @keyframes gl2{
+    0%,93%,100%{ opacity:0; transform:none; clip-path:inset(0 0 0 0); }
+    95%{ opacity:.6; transform:translate(4px,-2px); clip-path:inset(40% 0 30% 0); }
+    97%{ opacity:.6; transform:translate(-3px,1px); clip-path:inset(5% 0 78% 0); }
+    99%{ opacity:0; }
+  }
+  .hero-sub{ max-width:660px; color:var(--muted); font-size:clamp(16px,2vw,19px); margin:0 0 8px; }
+  .hero-sub b{ color:var(--ink); font-weight:600; }
+  .whoami{
+    font-family:"JetBrains Mono",monospace; font-size:clamp(14px,2.2vw,18px);
+    color:var(--ink); margin:18px 0 30px; min-height:28px;
+  }
+  .whoami .prompt{ color:var(--green); }
+  .whoami .cmd{ color:var(--cyan); }
+  .whoami .rot{ color:var(--violet); font-weight:700; }
+  .caret{ display:inline-block; width:9px; height:1.05em; background:var(--cyan); vertical-align:text-bottom; margin-left:3px; animation:blink 1s steps(1) infinite; }
+  @keyframes blink{ 50%{ opacity:0; } }
+  .cta-row{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:44px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:"JetBrains Mono",monospace; font-size:14px; font-weight:700;
+    padding:12px 20px; border-radius:10px; border:1px solid var(--cyan);
+    color:#02141a; background:var(--cyan); transition:transform .15s, box-shadow .15s, background .15s;
+  }
+  .btn:hover{ text-decoration:none; transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,229,255,.35); }
+  .btn.ghost{ background:transparent; color:var(--cyan); }
+  .btn.ghost:hover{ background:rgba(0,229,255,.1); box-shadow:none; }
+  .hero-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .hstat{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 18px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  }
+  .hstat b{ display:block; font-family:"JetBrains Mono",monospace; font-size:clamp(24px,3.4vw,34px); color:var(--cyan); line-height:1.1; }
+  .hstat span{ color:var(--muted); font-size:13px; }
+
+  /* ---------- sections ---------- */
+  section{ padding:72px 0 8px; }
+  .sec-head{ margin-bottom:28px; }
+  .sec-cmd{
+    font-family:"JetBrains Mono",monospace; color:var(--green); font-size:15px; margin:0 0 6px;
+  }
+  .sec-cmd .arg{ color:var(--cyan); }
+  h2{ font-size:clamp(28px,4.4vw,42px); margin:0 0 8px; font-weight:800; letter-spacing:-.01em; line-height:1.12; }
+  .sec-lede{ color:var(--muted); max-width:720px; margin:0; }
+  .sec-lede b{ color:var(--ink); font-weight:600; }
+
+  /* ---------- terminal ---------- */
+  .term{
+    background:#04070b; border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,.5);
+  }
+  .term-bar{
+    display:flex; align-items:center; gap:8px; padding:10px 14px;
+    background:#0a111c; border-bottom:1px solid var(--line-soft);
+    font-family:"JetBrains Mono",monospace; font-size:12.5px; color:var(--muted);
+  }
+  .tdot{ width:11px; height:11px; border-radius:50%; }
+  .tdot.r{ background:#ff5f57; } .tdot.y{ background:#febc2e; } .tdot.g{ background:#28c840; }
+  .term-bar .t{ margin-left:8px; }
+  .term-body{
+    font-family:"JetBrains Mono",monospace; font-size:13.5px; line-height:1.65;
+    padding:16px 18px; height:340px; overflow-y:auto; cursor:text;
+  }
+  .term-body::-webkit-scrollbar{ width:8px; } .term-body::-webkit-scrollbar-thumb{ background:#1c3049; border-radius:4px; }
+  .term-body p{ margin:0 0 4px; white-space:pre-wrap; word-break:break-word; }
+  .t-dim{ color:var(--faint); } .t-cy{ color:var(--cyan); } .t-gr{ color:var(--green); }
+  .t-vi{ color:var(--violet); } .t-or{ color:var(--orange); } .t-in{ color:var(--ink); }
+  .term-line{ display:flex; align-items:baseline; gap:8px; }
+  .term-prompt{ color:var(--green); white-space:nowrap; }
+  .term-prompt .path{ color:var(--cyan); }
+  #term-input{
+    flex:1; min-width:60px; background:transparent; border:none; outline:none;
+    color:var(--ink); font:inherit; caret-color:var(--cyan); padding:0;
+  }
+  .cmd-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .cmd-chips button{
+    font-family:"JetBrains Mono",monospace; font-size:12.5px; color:var(--cyan);
+    background:rgba(0,229,255,.06); border:1px solid var(--line); border-radius:999px;
+    padding:5px 13px; cursor:pointer; transition:background .15s,border-color .15s;
+  }
+  .cmd-chips button:hover{ background:rgba(0,229,255,.14); border-color:var(--cyan); }
+
+  /* ---------- octopus ---------- */
+  .octo-grid{ display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:28px; align-items:start; }
+  .octo-stage{
+    position:relative; background:radial-gradient(ellipse 75% 65% at 50% 42%, rgba(0,229,255,.07), transparent 70%), var(--panel);
+    border:1px solid var(--line); border-radius:var(--radius); padding:10px 6px 4px;
+  }
+  .octo-stage svg{ display:block; width:100%; height:auto; }
+  .tent{ fill:none; stroke-linecap:round; }
+  .tent-base{ stroke:#1d4b5e; stroke-width:15; transition:stroke .25s; }
+  .tent-pulse{ stroke:rgba(0,229,255,.5); stroke-width:15; stroke-dasharray:2 30; animation:dashflow 2.6s linear infinite; opacity:.55; }
+  @keyframes dashflow{ to{ stroke-dashoffset:-32; } }
+  .arm-g{ cursor:pointer; }
+  .arm-g .node-ring{ fill:#0a1420; stroke:#2b5871; stroke-width:2; transition:stroke .25s; }
+  .arm-g .node-core{ fill:var(--cyan); }
+  .arm-g.active .tent-base{ stroke:var(--violet); }
+  .arm-g.active .tent-pulse{ stroke:rgba(167,139,250,.85); opacity:1; animation-duration:.9s; }
+  .arm-g.active .node-ring{ stroke:var(--violet); }
+  .arm-g.active .node-core{ fill:var(--violet); }
+  .arm-g:hover .tent-base{ stroke:#2b7d99; }
+  .arm-g.active:hover .tent-base{ stroke:var(--violet); }
+  .octo-head{ animation:bob 5s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  @keyframes bob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
+  .arm-chip{
+    position:absolute; transform:translate(-50%,-50%);
+    font-family:"JetBrains Mono",monospace; font-size:11.5px; font-weight:700; white-space:nowrap;
+    color:var(--ink); background:rgba(6,12,20,.88); border:1px solid var(--line);
+    padding:4px 10px; border-radius:999px; cursor:pointer; transition:border-color .2s,color .2s,background .2s;
+  }
+  .arm-chip:hover{ border-color:var(--cyan); }
+  .arm-chip.active{ border-color:var(--violet); color:var(--violet); background:rgba(167,139,250,.12); }
+  .arm-chip .n{ color:var(--faint); font-weight:400; }
+  .arm-chip.active .n{ color:var(--violet); }
+  .octo-panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:24px 26px; min-height:340px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  }
+  .octo-panel .arm-no{ font-family:"JetBrains Mono",monospace; color:var(--violet); font-size:13px; letter-spacing:.18em; margin:0 0 6px; }
+  .octo-panel h3{ font-size:24px; margin:0 0 10px; line-height:1.25; }
+  .octo-panel p{ color:var(--muted); margin:0 0 16px; }
+  .octo-panel p b{ color:var(--ink); font-weight:600; }
+  .tool-row{ display:flex; flex-wrap:wrap; gap:7px; margin:0; padding:0; list-style:none; }
+  .tool-row li{
+    font-family:"JetBrains Mono",monospace; font-size:12.5px; color:var(--cyan);
+    border:1px solid var(--line); background:rgba(0,229,255,.05); border-radius:999px; padding:4px 11px;
+  }
+  .octo-note{ color:var(--faint); font-size:13.5px; margin-top:16px; }
+
+  /* ---------- case files ---------- */
+  .files{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .file{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:22px 22px 20px; transition:transform .18s, border-color .18s;
+  }
+  .file:hover{ transform:translateY(-4px); border-color:#2b5871; }
+  .file .fno{ font-family:"JetBrains Mono",monospace; font-size:12.5px; color:var(--orange); letter-spacing:.14em; margin:0 0 8px; }
+  .file h3{ font-size:19px; margin:0 0 8px; line-height:1.3; }
+  .file p{ color:var(--muted); font-size:14.5px; margin:0 0 14px; }
+  .file .metric{ font-family:"JetBrains Mono",monospace; color:var(--cyan); font-size:14px; border-top:1px dashed var(--line); padding-top:12px; margin:0; }
+
+  /* ---------- timeline + certs ---------- */
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start; }
+  .timeline{ margin:0; padding:0; list-style:none; border-left:2px solid var(--line); }
+  .timeline li{ position:relative; padding:0 0 26px 26px; }
+  .timeline li::before{
+    content:""; position:absolute; left:-7px; top:5px; width:12px; height:12px; border-radius:50%;
+    background:var(--bg); border:2px solid var(--cyan);
+  }
+  .timeline .when{ font-family:"JetBrains Mono",monospace; font-size:13px; color:var(--cyan); }
+  .timeline h3{ font-size:17px; margin:3px 0 4px; }
+  .timeline p{ color:var(--muted); font-size:14.5px; margin:0; }
+  .cert{
+    display:flex; gap:16px; align-items:flex-start;
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 20px; margin-bottom:14px;
+  }
+  .cert .badge{
+    flex:none; width:52px; height:52px; border-radius:12px; display:grid; place-items:center;
+    font-family:"JetBrains Mono",monospace; font-weight:700; font-size:13px; color:#02141a;
+  }
+  .cert h3{ font-size:16.5px; margin:0 0 3px; line-height:1.35; }
+  .cert p{ color:var(--muted); font-size:14px; margin:0; }
+  .principles{ margin:22px 0 0; padding:0; list-style:none; }
+  .principles li{ color:var(--muted); font-size:14.5px; padding:9px 0 9px 22px; position:relative; border-top:1px dashed var(--line-soft); }
+  .principles li::before{ content:"▸"; position:absolute; left:2px; color:var(--cyan); }
+  .principles li b{ color:var(--ink); font-weight:600; }
+
+  /* ---------- inspiration ---------- */
+  .steal-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .steal{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px;
+    transition:transform .18s, border-color .18s; display:flex; flex-direction:column;
+  }
+  .steal:hover{ transform:translateY(-4px); border-color:#2b5871; }
+  .steal .rank{ font-family:"JetBrains Mono",monospace; font-size:12px; color:var(--faint); margin:0 0 6px; }
+  .steal h3{ font-size:17.5px; margin:0 0 6px; line-height:1.3; }
+  .steal h3 a{ color:var(--ink); }
+  .steal h3 a:hover{ color:var(--cyan); }
+  .steal p{ color:var(--muted); font-size:14px; margin:0 0 12px; flex:1; }
+  .steal .tag{
+    align-self:flex-start; font-family:"JetBrains Mono",monospace; font-size:11.5px;
+    color:var(--green); border:1px solid rgba(57,255,20,.35); border-radius:999px; padding:3px 10px;
+  }
+  .lines{ margin:0; padding:0; list-style:none; }
+  .lines li{
+    padding:16px 0; border-top:1px dashed var(--line); display:grid; grid-template-columns:1fr auto; gap:6px 18px; align-items:baseline;
+  }
+  .lines li:first-child{ border-top:none; }
+  .lines blockquote{ margin:0; font-size:clamp(17px,2.4vw,22px); font-weight:600; line-height:1.4; }
+  .lines .who{ font-family:"JetBrains Mono",monospace; font-size:12.5px; color:var(--muted); white-space:nowrap; }
+  .lines .how{ grid-column:1 / -1; color:var(--faint); font-size:13.5px; margin:0; }
+  .caveats{
+    background:rgba(255,107,53,.06); border:1px solid rgba(255,107,53,.3); border-radius:var(--radius);
+    padding:20px 24px; margin-top:30px;
+  }
+  .caveats h3{ margin:0 0 10px; font-size:16px; color:var(--orange); font-family:"JetBrains Mono",monospace; font-weight:700; }
+  .caveats ul{ margin:0; padding-left:20px; color:var(--muted); font-size:14.5px; }
+  .caveats li{ margin-bottom:6px; }
+  .caveats li b{ color:var(--ink); font-weight:600; }
+
+  footer{
+    position:relative; z-index:2; margin-top:84px; border-top:1px solid var(--line-soft);
+    padding:28px 0 40px; color:var(--faint); font-size:13.5px;
+  }
+  footer .frow{ display:flex; gap:14px; flex-wrap:wrap; justify-content:space-between; align-items:baseline; }
+  footer p{ margin:0; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 960px){
+    .octo-grid{ grid-template-columns:1fr; }
+    .files,.steal-grid{ grid-template-columns:1fr 1fr; }
+    .two-col{ grid-template-columns:1fr; }
+    .hero-stats{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width: 600px){
+    .files,.steal-grid{ grid-template-columns:1fr; }
+    section{ padding-top:54px; }
+    .hero{ padding-top:44px; }
+    .term-body{ height:300px; font-size:12.5px; }
+    /* On narrow screens the radial chip labels would collide around the two
+       centre nodes, so they reflow into a tidy wrapped row under the SVG.
+       Tapping the tentacles themselves also works. */
+    .octo-stage{ display:flex; flex-wrap:wrap; gap:7px; padding:10px 10px 14px; }
+    .octo-stage svg{ flex:0 0 100%; }
+    .arm-chip{ position:static; transform:none; font-size:11px; padding:4px 9px; }
+    .nav-links a{ padding:5px 7px; }
+    .lines li{ grid-template-columns:1fr; }
+    .lines .who{ white-space:normal; }
+  }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .scanline,.octo-head,.tent-pulse,h1.glitch::before,h1.glitch::after,.caret{ animation:none !important; }
+    .file:hover,.steal:hover,.btn:hover{ transform:none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles" aria-hidden="true"></canvas>
+<canvas id="matrixfx" aria-hidden="true"></canvas>
+<div class="scanline" aria-hidden="true"></div>
+<div class="spotlight" aria-hidden="true"></div>
+<div id="cursor-dot" aria-hidden="true"></div>
+<div id="cursor-ring" aria-hidden="true"></div>
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-brand">teja<span>cyber</span>:~$</span>
+    <div class="nav-links">
+      <a href="#whoami">whoami</a>
+      <a href="#terminal">terminal</a>
+      <a href="#octopus">the_octopus</a>
+      <a href="#files">case_files</a>
+      <a href="#path">path</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <!-- ================= HERO ================= -->
+  <header class="hero" id="whoami">
+    <div class="wrap hero-inner">
+      <div class="boot mono" id="boot" aria-hidden="true"></div>
+      <p class="handle">TejaCyber — threat intel · detection · response</p>
+      <h1 class="glitch" data-text="I play with AI. Then I secure it." aria-label="I play with AI. Then I secure it.">I play with AI.<span class="l2">Then I secure it.</span></h1>
+      <p class="hero-sub">Eight years in government cyber defence — tracking APT campaigns, turning intelligence into detections analysts actually use, and giving responders the actor context that makes containment faster. <b>Lately, I play with AI</b> — bending it into cyber defence, and learning to secure the AI itself.</p>
+      <p class="whoami"><span class="prompt">visitor@tejacyber:~$</span> <span class="cmd">whoami --now</span> → <span class="rot" id="rotator">playing with AI</span><span class="caret" aria-hidden="true"></span></p>
+      <div class="cta-row">
+        <a class="btn" href="#octopus">Meet the octopus ↓</a>
+        <a class="btn ghost" href="#terminal">Try the terminal</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><b><span class="count" data-target="8">0</span></b><span>years in threat intelligence &amp; incident response</span></div>
+        <div class="hstat"><b><span class="count" data-target="120" data-suffix="+">0</span></b><span>Sigma / YARA detection rules contributed</span></div>
+        <div class="hstat"><b><span class="count" data-target="100" data-suffix="+ GB">0</span></b><span>of endpoint &amp; network telemetry hunted across</span></div>
+        <div class="hstat"><b><span class="count" data-target="70" data-prefix="−" data-suffix="%">0</span></b><span>analyst triage effort, via automation pipelines</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= TERMINAL ================= -->
+  <section id="terminal">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <p class="sec-cmd">$ ./portfolio <span class="arg">--interactive</span></p>
+        <h2>Don't just read it. Run it.</h2>
+        <p class="sec-lede">The signature move of the best cyber portfolios (dotUniverse, Ch4120N) is a <b>real, typeable terminal</b> — commands, history, Easter eggs. This one works: click in, type <b class="mono">help</b>, and poke around. Try <b class="mono">sudo rm -rf /</b> if you're feeling brave.</p>
+      </div>
+      <div class="term rv">
+        <div class="term-bar">
+          <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
+          <span class="t">visitor@tejacyber: ~/portfolio — bash</span>
+        </div>
+        <div class="term-body" id="term-body">
+          <div id="term-out"></div>
+          <div class="term-line">
+            <span class="term-prompt">visitor@tejacyber<span class="path">:~$</span></span>
+            <input id="term-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal input — type help and press Enter">
+          </div>
+        </div>
+      </div>
+      <div class="cmd-chips rv" aria-label="Shortcut commands">
+        <button data-cmd="help">help</button>
+        <button data-cmd="whoami">whoami</button>
+        <button data-cmd="skills">skills</button>
+        <button data-cmd="certs">certs</button>
+        <button data-cmd="contact">contact</button>
+        <button data-cmd="matrix">matrix</button>
+        <button data-cmd="sudo rm -rf /">sudo rm -rf /</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= OCTOPUS ================= -->
+  <section id="octopus">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <p class="sec-cmd">$ cat <span class="arg">skills.svg</span> <span class="arg">--arms=8</span></p>
+        <h2>One brain. Eight arms.</h2>
+        <p class="sec-lede">Octopuses are the original generalists — <b>three hearts, nine brains</b>, every arm semi-autonomous, all of them curious. That's the job: eight security domains run by one operator. The tentacles are drawn as <b>circuit traces</b> — each arm ends in a live node. <b>Tap an arm</b> to see what it does. (His eyes follow your cursor. He notices things. It's the job.)</p>
+      </div>
+      <div class="octo-grid">
+        <div class="octo-stage rv" id="octo-stage">
+          <svg viewBox="0 0 800 560" role="img" aria-label="An octopus whose eight tentacles represent eight security skill domains">
+            <!-- arms (paths drawn first, head on top) -->
+            <g class="arm-g" data-arm="0" tabindex="0" role="button" aria-label="Arm 1: Threat Intelligence">
+              <path class="tent tent-base" d="M330 222 C250 258, 172 258, 132 318"/>
+              <path class="tent tent-pulse" d="M330 222 C250 258, 172 258, 132 318"/>
+              <circle class="node-ring" cx="118" cy="336" r="17"/><circle class="node-core" cx="118" cy="336" r="6"/>
+            </g>
+            <g class="arm-g" data-arm="1" tabindex="0" role="button" aria-label="Arm 2: Detection Engineering">
+              <path class="tent tent-base" d="M344 234 C282 298, 232 340, 207 394"/>
+              <path class="tent tent-pulse" d="M344 234 C282 298, 232 340, 207 394"/>
+              <circle class="node-ring" cx="198" cy="413" r="17"/><circle class="node-core" cx="198" cy="413" r="6"/>
+            </g>
+            <g class="arm-g" data-arm="2" tabindex="0" role="button" aria-label="Arm 3: Incident Response">
+              <path class="tent tent-base" d="M364 242 C332 320, 312 390, 295 450"/>
+              <path class="tent tent-pulse" d="M364 242 C332 320, 312 390, 295 450"/>
+              <circle class="node-ring" cx="289" cy="469" r="17"/><circle class="node-core" cx="289" cy="469" r="6"/>
+            </g>
+            <g class="arm-g" data-arm="3" tabindex="0" role="button" aria-label="Arm 4: Threat Hunting">
+              <path class="tent tent-base" d="M388 246 C364 330, 338 420, 320 490"/>
+              <path class="tent tent-pulse" d="M388 246 C364 330, 338 420, 320 490"/>
+              <circle class="node-ring" cx="320" cy="509" r="17"/><circle class="node-core" cx="320" cy="509" r="6"/>
+            </g>
+            <g class="arm-g" data-arm="4" tabindex="0" role="button" aria-label="Arm 5: AI Security">
+              <path class="tent tent-base" d="M412 246 C436 330, 462 420, 480 490"/>
+              <path class="tent tent-pulse" d="M412 246 C436 330, 462 420, 480 490"/>
+              <circle class="node-ring" cx="480" cy="509" r="17"/><circle class="node-core" cx="480" cy="509" r="6"/>
+            </g>
+            <g class="arm-g" data-arm="5" tabindex="0" role="button" aria-label="Arm 6: Automation and AI Workflows">
+              <path class="tent tent-base" d="M436 242 C468 320, 488 390, 505 450"/>
+              <path class="tent tent-pulse" d="M436 242 C468 320, 488 390, 505 450"/>
+              <circle class="node-ring" cx="511" cy="469" r="17"/><circle class="node-core" cx="511" cy="469" r="6"/>
+            </g>
+            <g class="arm-g" data-arm="6" tabindex="0" role="button" aria-label="Arm 7: Network and Endpoint">
+              <path class="tent tent-base" d="M456 234 C518 298, 568 340, 593 394"/>
+              <path class="tent tent-pulse" d="M456 234 C518 298, 568 340, 593 394"/>
+              <circle class="node-ring" cx="602" cy="413" r="17"/><circle class="node-core" cx="602" cy="413" r="6"/>
+            </g>
+            <g class="arm-g" data-arm="7" tabindex="0" role="button" aria-label="Arm 8: Cloud and OT Security">
+              <path class="tent tent-base" d="M470 222 C550 258, 628 258, 668 318"/>
+              <path class="tent tent-pulse" d="M470 222 C550 258, 628 258, 668 318"/>
+              <circle class="node-ring" cx="682" cy="336" r="17"/><circle class="node-core" cx="682" cy="336" r="6"/>
+            </g>
+            <!-- head -->
+            <g class="octo-head">
+              <path d="M300 192 C294 92, 338 44, 400 44 C462 44, 506 92, 500 192 C499 226, 468 244, 400 244 C332 244, 301 226, 300 192 Z" fill="#0e2233" stroke="#00e5ff" stroke-width="2.5"/>
+              <path d="M322 178 C318 108, 348 66, 400 62" fill="none" stroke="rgba(0,229,255,.35)" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="360" cy="148" r="21" fill="#eaf6ff"/>
+              <circle cx="440" cy="148" r="21" fill="#eaf6ff"/>
+              <circle class="pupil" cx="360" cy="150" r="9" fill="#04121c"/>
+              <circle class="pupil" cx="440" cy="150" r="9" fill="#04121c"/>
+              <circle cx="363" cy="146" r="3" fill="#9be9ff"/>
+              <circle cx="443" cy="146" r="3" fill="#9be9ff"/>
+              <path d="M382 196 Q400 206 418 196" fill="none" stroke="#00e5ff" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="330" cy="182" r="4" fill="rgba(167,139,250,.7)"/>
+              <circle cx="470" cy="182" r="4" fill="rgba(167,139,250,.7)"/>
+            </g>
+          </svg>
+          <button class="arm-chip" data-arm="0" style="left:14.75%; top:60%"><span class="n">01</span> Threat Intel</button>
+          <button class="arm-chip" data-arm="1" style="left:24.75%; top:73.75%"><span class="n">02</span> Detection Eng</button>
+          <button class="arm-chip" data-arm="2" style="left:36.1%; top:83.75%"><span class="n">03</span> Incident Resp</button>
+          <button class="arm-chip" data-arm="3" style="left:40%; top:90.9%"><span class="n">04</span> Hunting</button>
+          <button class="arm-chip" data-arm="4" style="left:60%; top:90.9%"><span class="n">05</span> AI Security</button>
+          <button class="arm-chip" data-arm="5" style="left:63.9%; top:83.75%"><span class="n">06</span> Automation + AI</button>
+          <button class="arm-chip" data-arm="6" style="left:75.25%; top:73.75%"><span class="n">07</span> Network/Endpoint</button>
+          <button class="arm-chip" data-arm="7" style="left:85.25%; top:60%"><span class="n">08</span> Cloud &amp; OT</button>
+        </div>
+        <div class="octo-panel rv" id="octo-panel" aria-live="polite">
+          <p class="arm-no" id="arm-no">ARM 05 / 08</p>
+          <h3 id="arm-title">AI Security</h3>
+          <p id="arm-desc"></p>
+          <ul class="tool-row" id="arm-tools"></ul>
+          <p class="octo-note">The metaphor is original: the research found <b>no</b> personal portfolio anywhere using an octopus for skills — the closest precedents are Jupyter's “Data Octopus” (tentacles as circuit paths) and IDEO's mascot Inky. First mover advantage.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CASE FILES ================= -->
+  <section id="files">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <p class="sec-cmd">$ ls <span class="arg">~/case-files</span></p>
+        <h2>Case files, not bullet points.</h2>
+        <p class="sec-lede">Chye Yan Tong's portfolio frames work as a numbered <b>archive of case files</b> — curation over completeness. Three files tell this story better than thirty bullets: a detection library, an automation pipeline, and the room where national exercises get briefed.</p>
+      </div>
+      <div class="files">
+        <article class="file rv">
+          <p class="fno">FILE 001 — DETECTION</p>
+          <h3>The detection library</h3>
+          <p>Sigma and YARA rules written from tracked adversary behaviour, not generic feeds — every rule mapped to MITRE ATT&amp;CK, with detection-gap analysis and lifecycle management so rules stay sharp instead of piling up.</p>
+          <p class="metric">120+ rules contributed</p>
+        </article>
+        <article class="file rv">
+          <p class="fno">FILE 002 — AUTOMATION</p>
+          <h3>The triage pipeline</h3>
+          <p>Python IOC-enrichment pipelines and infrastructure clustering that took the repetitive weight off analysts — enrichment, correlation and first-pass verdicts automated, humans kept for the judgement calls.</p>
+          <p class="metric">−70% analyst triage effort</p>
+        </article>
+        <article class="file rv">
+          <p class="fno">FILE 003 — THE BRIEFING ROOM</p>
+          <h3>National-level exercises</h3>
+          <p>Threat briefings for senior executives during national-level cyber exercises — live-fire and tabletop — across critical sectors, plus commendations for performance in high-severity national security situations.</p>
+          <p class="metric">100+ GB of telemetry hunted</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PATH: TIMELINE + CERTS ================= -->
+  <section id="path">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <p class="sec-cmd">$ cat <span class="arg">path.log</span> <span class="arg">certs.badges</span></p>
+        <h2>The path so far — and the badges.</h2>
+        <p class="sec-lede">Numbered chapters beat a wall of jobs; certifications read as <b>badges on a roadmap</b>, not a bullet list. Employer names stay off the public page by design — roles and proof only.</p>
+      </div>
+      <div class="two-col">
+        <ol class="timeline rv">
+          <li>
+            <span class="when">2018 — PRESENT</span>
+            <h3>Cyber Security Officer — Threat Intelligence &amp; Incident Response</h3>
+            <p>Government cyber defence, New Delhi. APT tracking, detection engineering, IR support, threat hunting, and security assessments of critical-sector environments including SCADA / DCS / ICS.</p>
+          </li>
+          <li>
+            <span class="when">2016</span>
+            <h3>B.Tech — Electronics &amp; Communication Engineering</h3>
+            <p>The engineering base under everything since: signals, systems, and how hardware actually talks.</p>
+          </li>
+          <li>
+            <span class="when">2015</span>
+            <h3>Technical Engineer</h3>
+            <p>Technical training on IT systems and infrastructure security, Hyderabad — the first hands-on security role.</p>
+          </li>
+        </ol>
+        <div class="rv">
+          <div class="cert">
+            <div class="badge" style="background:var(--cyan)">GCP</div>
+            <div>
+              <h3>Google Cloud Professional Cloud Security Engineer</h3>
+              <p>Current — from January 2025. The cloud-security credential behind Arm 08.</p>
+            </div>
+          </div>
+          <div class="cert">
+            <div class="badge" style="background:var(--violet)">MS</div>
+            <div>
+              <h3>Microsoft Certified Solutions Expert (MCSE)</h3>
+              <p>Enterprise systems depth — Windows Server, infrastructure, identity.</p>
+            </div>
+          </div>
+          <div class="cert">
+            <div class="badge" style="background:var(--green)">NW</div>
+            <div>
+              <h3>Cisco Certified Network Associate (CCNA)</h3>
+              <p>The networking foundation under the PCAP-and-packets work.</p>
+            </div>
+          </div>
+          <ul class="principles">
+            <li><b>Intelligence-led:</b> every detection starts from a tracked adversary behaviour.</li>
+            <li><b>Evidence over assumption:</b> hypotheses ship with the evidence that would kill them.</li>
+            <li><b>TI arm, not IR commander:</b> responders get attribution and scope — honestly framed.</li>
+            <li><b>Honest about tools:</b> only tools actually used get named.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+</main>
+
+<footer>
+  <div class="wrap frow">
+    <p class="mono">visitor@tejacyber:~$ <span style="color:var(--green)">exit</span> — there is no escape. The octopus has eight arms.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ================= data ================= */
+  var ARMS = [
+    { title:"Threat Intelligence",
+      desc:"The brain's favourite arm. The full intelligence cycle: eliciting Priority Intelligence Requirements, tracking and profiling APT campaigns, OSINT and dark-web monitoring, and delivering targeted intelligence to SOC, hunt teams and CISO-level stakeholders.",
+      tools:["MITRE ATT&CK","Diamond Model","OpenCTI","OSINT","Dark-web monitoring","PIR management"] },
+    { title:"Detection Engineering",
+      desc:"Detections written from tracked adversary behaviour, not generic rule feeds — <b>120+ Sigma and YARA rules</b> contributed, network-based signatures, detection-gap analysis and rule lifecycle management across the SIEM estate.",
+      tools:["Sigma","YARA","Splunk","Elastic / ELK","ArcSight","SIEM tuning"] },
+    { title:"Incident Response",
+      desc:"The TI arm of response — <b>not</b> the incident commander, and the page says so plainly. Real-time threat intelligence and actor attribution for IR teams: faster containment, sharper scope determination, evidence-backed eradication on high-severity incidents.",
+      tools:["Actor attribution","Scoping","EVTX analysis","Containment support"] },
+    { title:"Threat Hunting",
+      desc:"Proactive hunts across endpoint and network telemetry — lateral movement, insider threats, undetected persistence — validated with PCAP, memory forensics and host artefacts across <b>100+ GB</b> of telemetry.",
+      tools:["Hayabusa","Timesketch","SELKS","PCAP validation","Memory forensics"] },
+    { title:"AI Security",
+      desc:"The newest arm, and the direction of travel. <b>I like to play with AI</b> — and AI in cyber is only half of it. The other half is securing the AI itself: prompt-injection defence, agent and tool-use security, model supply-chain risk, and AI systems designed with controls from day one. Building depth here now, on top of eight years of the fundamentals it has to stand on.",
+      tools:["LLM app security","Prompt-injection defence","Agent security","AI-assisted detection"] },
+    { title:"Automation & AI Workflows",
+      desc:"Python IOC-enrichment pipelines, infrastructure clustering and investigative automation, plus AI-driven threat workflows and SOAR integration — the pipelines that cut analyst triage effort by <b>70%</b>.",
+      tools:["Python","Flask","SOAR integration","IOC enrichment","Bash","PowerShell"] },
+    { title:"Network & Endpoint",
+      desc:"Packets don't lie. Network detection and endpoint telemetry work: Suricata signatures, deep PCAP analysis, EDR/XDR and NDR tooling, registry and artefact analysis, IOC and sandbox work.",
+      tools:["Suricata IDS","Wireshark","EDR / XDR","NDR","Sandbox analysis"] },
+    { title:"Cloud & OT Security",
+      desc:"From cloud control planes to plant floors: cloud security engineering (Google Cloud certified), Zero Trust and IAM, and time-bound security assessments of critical-sector environments including <b>SCADA / DCS / ICS</b>, with structured findings for leadership.",
+      tools:["Google Cloud","Zero Trust","IAM","Kubernetes","SCADA / DCS / ICS"] }
+  ];
+
+  /* ================= octopus ================= */
+  var panel = {
+    no: document.getElementById("arm-no"),
+    title: document.getElementById("arm-title"),
+    desc: document.getElementById("arm-desc"),
+    tools: document.getElementById("arm-tools")
+  };
+  var armGroups = Array.prototype.slice.call(document.querySelectorAll(".arm-g"));
+  var armChips = Array.prototype.slice.call(document.querySelectorAll(".arm-chip"));
+  function selectArm(i){
+    var a = ARMS[i]; if(!a) return;
+    panel.no.textContent = "ARM 0" + (i+1) + " / 08";
+    panel.title.textContent = a.title;
+    panel.desc.innerHTML = a.desc;
+    panel.tools.innerHTML = a.tools.map(function(t){ return "<li>" + t + "</li>"; }).join("");
+    armGroups.forEach(function(g,j){ g.classList.toggle("active", j===i); });
+    armChips.forEach(function(c,j){ c.classList.toggle("active", j===i); });
+  }
+  armGroups.forEach(function(g,i){
+    g.addEventListener("click", function(){ selectArm(i); });
+    g.addEventListener("mouseenter", function(){ selectArm(i); });
+    g.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); selectArm(i); } });
+  });
+  armChips.forEach(function(c,i){ c.addEventListener("click", function(){ selectArm(i); }); });
+  selectArm(4);
+
+  /* octopus eyes follow the cursor (the Cassie Evans trick) */
+  var pupils = document.querySelectorAll(".pupil");
+  if(!reduced && window.matchMedia("(pointer:fine)").matches){
+    document.addEventListener("mousemove", function(e){
+      var dx = (e.clientX / window.innerWidth - 0.5) * 10;
+      var dy = (e.clientY / window.innerHeight - 0.5) * 8;
+      pupils.forEach(function(p){ p.setAttribute("transform", "translate(" + dx.toFixed(1) + "," + dy.toFixed(1) + ")"); });
+    });
+  }
+
+  /* ================= spotlight + custom cursor ================= */
+  var dot = document.getElementById("cursor-dot"), ring = document.getElementById("cursor-ring");
+  if(window.matchMedia("(pointer:fine)").matches){
+    var rx = -100, ry = -100, tx = -100, ty = -100;
+    document.addEventListener("mousemove", function(e){
+      tx = e.clientX; ty = e.clientY;
+      dot.style.left = tx + "px"; dot.style.top = ty + "px";
+      document.documentElement.style.setProperty("--mx", (tx / window.innerWidth * 100) + "%");
+      document.documentElement.style.setProperty("--my", (ty / window.innerHeight * 100) + "%");
+    });
+    (function ringLoop(){
+      rx += (tx - rx) * 0.16; ry += (ty - ry) * 0.16;
+      ring.style.left = rx + "px"; ring.style.top = ry + "px";
+      requestAnimationFrame(ringLoop);
+    })();
+    document.querySelectorAll("a, button, .arm-g, input").forEach(function(el){
+      el.addEventListener("mouseenter", function(){ ring.classList.add("grow"); });
+      el.addEventListener("mouseleave", function(){ ring.classList.remove("grow"); });
+    });
+  }
+
+  /* ================= boot sequence + rotator ================= */
+  var bootEl = document.getElementById("boot");
+  var bootLines = [
+    "&gt; Initializing portfolio v2.0 …",
+    "&gt; Loading 8 arms … <span class='ok'>OK</span>",
+    "&gt; Threat intel feeds … <span class='ok'>SYNCED</span>",
+    "&gt; AI modules … <span class='cy'>ONLINE</span>"
+  ];
+  if(reduced){
+    bootEl.innerHTML = bootLines.map(function(l){ return "<p>" + l + "</p>"; }).join("");
+  } else {
+    bootLines.forEach(function(l, i){
+      setTimeout(function(){
+        var p = document.createElement("p"); p.innerHTML = l; bootEl.appendChild(p);
+      }, 220 * (i+1));
+    });
+  }
+  var phrases = ["playing with AI","bending AI into cyber defence","breaking AI before attackers do","securing agents & LLMs","hunting APTs with intel that holds up","turning intel into detections"];
+  var rotEl = document.getElementById("rotator");
+  if(reduced){
+    rotEl.textContent = phrases[0];
+  } else {
+    var pi = 0, ci = phrases[0].length, deleting = false;
+    (function tick(){
+      var word = phrases[pi];
+      if(!deleting){
+        ci++;
+        if(ci >= word.length){ ci = word.length; deleting = true; setTimeout(tick, 1900); rotEl.textContent = word; return; }
+      } else {
+        ci--;
+        if(ci <= 0){ ci = 0; deleting = false; pi = (pi+1) % phrases.length; }
+      }
+      rotEl.textContent = phrases[pi].slice(0, ci);
+      setTimeout(tick, deleting ? 34 : 62);
+    })();
+  }
+
+  /* ================= count-up stats ================= */
+  function countUp(el){
+    var target = parseFloat(el.getAttribute("data-target"));
+    var prefix = el.getAttribute("data-prefix") || "";
+    var suffix = el.getAttribute("data-suffix") || "";
+    if(reduced){ el.textContent = prefix + target + suffix; return; }
+    var start = null, dur = 1500;
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = prefix + Math.round(target * eased) + suffix;
+      if(p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var counted = new WeakSet();
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        en.target.classList.add("in");
+        en.target.querySelectorAll(".count").forEach(function(c){
+          if(!counted.has(c)){ counted.add(c); countUp(c); }
+        });
+        if(en.target.classList && en.target.classList.contains("count") && !counted.has(en.target)){
+          counted.add(en.target); countUp(en.target);
+        }
+        io.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.35 });
+  document.querySelectorAll(".rv, .hstat, .count").forEach(function(el){ io.observe(el); });
+
+  /* ================= particles ================= */
+  var canvas = document.getElementById("particles"), ctx = canvas.getContext("2d");
+  var W, H, parts = [], mouse = { x:-9999, y:-9999 };
+  function sizeCanvas(){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + "px"; canvas.style.height = H + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function makeParts(){
+    parts = [];
+    var n = Math.min(55, Math.floor(W * H / 26000));
+    for(var i = 0; i < n; i++){
+      parts.push({ x: Math.random()*W, y: Math.random()*H,
+        vx: (Math.random()-.5)*.35, vy: (Math.random()-.5)*.35, r: Math.random()*1.6+.6 });
+    }
+  }
+  function drawParts(){
+    ctx.clearRect(0, 0, W, H);
+    var i, j, p, q, dx, dy, d;
+    for(i = 0; i < parts.length; i++){
+      p = parts[i];
+      p.x += p.vx; p.y += p.vy;
+      if(p.x < 0 || p.x > W) p.vx *= -1;
+      if(p.y < 0 || p.y > H) p.vy *= -1;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832);
+      ctx.fillStyle = "rgba(0,229,255,.55)"; ctx.fill();
+    }
+    for(i = 0; i < parts.length; i++){
+      for(j = i+1; j < parts.length; j++){
+        p = parts[i]; q = parts[j];
+        dx = p.x - q.x; dy = p.y - q.y; d = dx*dx + dy*dy;
+        if(d < 16900){
+          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y);
+          ctx.strokeStyle = "rgba(0,229,255," + (0.14 * (1 - d/16900)).toFixed(3) + ")";
+          ctx.lineWidth = 1; ctx.stroke();
+        }
+      }
+      p = parts[i];
+      dx = p.x - mouse.x; dy = p.y - mouse.y; d = dx*dx + dy*dy;
+      if(d < 32400){
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y);
+        ctx.strokeStyle = "rgba(167,139,250,.28)"; ctx.lineWidth = 1; ctx.stroke();
+      }
+    }
+  }
+  sizeCanvas(); makeParts();
+  if(reduced){ drawParts(); }
+  else {
+    (function loop(){ if(!document.hidden) drawParts(); requestAnimationFrame(loop); })();
+    document.addEventListener("mousemove", function(e){ mouse.x = e.clientX; mouse.y = e.clientY; });
+  }
+  var rsz;
+  window.addEventListener("resize", function(){ clearTimeout(rsz); rsz = setTimeout(function(){ sizeCanvas(); makeParts(); if(reduced) drawParts(); }, 200); });
+
+  /* ================= matrix rain (terminal easter egg) ================= */
+  var mCanvas = document.getElementById("matrixfx"), mCtx = mCanvas.getContext("2d");
+  var mTimer = null;
+  function startMatrix(){
+    mCanvas.width = window.innerWidth; mCanvas.height = window.innerHeight;
+    mCanvas.style.opacity = "0.9";
+    var cols = Math.floor(mCanvas.width / 16), drops = [];
+    for(var i = 0; i < cols; i++) drops.push(Math.random() * -40);
+    var chars = "アイウエオカキクケコサシスセソ0123456789ABCDEF<>/\\|";
+    clearInterval(mTimer);
+    mTimer = setInterval(function(){
+      mCtx.fillStyle = "rgba(3,6,4,.14)"; mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
+      mCtx.font = "15px monospace"; mCtx.fillStyle = "#39ff14";
+      for(var i = 0; i < cols; i++){
+        var ch = chars[Math.floor(Math.random() * chars.length)];
+        mCtx.fillText(ch, i * 16, drops[i] * 16);
+        if(drops[i] * 16 > mCanvas.height && Math.random() > 0.976) drops[i] = 0;
+        drops[i]++;
+      }
+    }, 50);
+    setTimeout(stopMatrix, 6000);
+  }
+  function stopMatrix(){
+    clearInterval(mTimer); mTimer = null;
+    mCanvas.style.opacity = "0";
+    setTimeout(function(){ mCtx.clearRect(0, 0, mCanvas.width, mCanvas.height); }, 450);
+  }
+
+  /* ================= terminal ================= */
+  var out = document.getElementById("term-out");
+  var input = document.getElementById("term-input");
+  var body = document.getElementById("term-body");
+  var history = [], hIdx = -1;
+
+  function print(html, cls){
+    var p = document.createElement("p");
+    if(cls) p.className = cls;
+    p.innerHTML = html;
+    out.appendChild(p);
+    body.scrollTop = body.scrollHeight;
+  }
+  function echo(cmd){
+    print("<span class='t-gr'>visitor@tejacyber</span><span class='t-cy'>:~$</span> <span class='t-in'>" +
+      cmd.replace(/&/g,"&amp;").replace(/</g,"&lt;") + "</span>");
+  }
+  var COMMANDS = {
+    help: function(){
+      print("Available commands:", "t-cy");
+      print("  whoami        who is this guy");
+      print("  skills        the eight arms, listed");
+      print("  arms          jump to the octopus");
+      print("  projects      case files 001–003");
+      print("  certs         certifications & badges");
+      print("  contact       how to reach him");
+      print("  neofetch      system info, obviously");
+      print("  matrix        you know you want to");
+      print("  coffee        fuel status");
+      print("  clear         wipe the terminal");
+      print("  sudo rm -rf / go on. try it.");
+    },
+    whoami: function(){
+      print("TejaCyber — Cyber Security Officer, threat intelligence & incident response.", "t-in");
+      print("8 years in government cyber defence. Tracks APTs, builds detections, backs responders with attribution.");
+      print("Current obsession: <span class='t-vi'>AI in cyber — and cyber for AI.</span>");
+    },
+    skills: function(){
+      ARMS.forEach(function(a, i){ print("  arm 0" + (i+1) + "  " + a.title, i === 4 ? "t-vi" : ""); });
+      print("Scroll to the octopus section — or type <span class='t-cy'>arms</span> — and tap one.", "t-dim");
+    },
+    arms: function(){
+      print("Deploying octopus…", "t-gr");
+      document.getElementById("octopus").scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+    },
+    projects: function(){
+      print("FILE 001 — The detection library · 120+ Sigma/YARA rules, ATT&CK-mapped", "t-in");
+      print("FILE 002 — The triage pipeline · −70% analyst triage effort", "t-in");
+      print("FILE 003 — The briefing room · national-level exercises, exec briefings", "t-in");
+    },
+    certs: function(){
+      print("▸ Google Cloud Professional Cloud Security Engineer (Jan 2025 — current)", "t-in");
+      print("▸ Microsoft Certified Solutions Expert (MCSE)", "t-in");
+      print("▸ Cisco Certified Network Associate (CCNA)", "t-in");
+      print("▸ B.Tech, Electronics & Communication Engineering", "t-in");
+    },
+    contact: function(){
+      print("No email or phone is published — by design.", "t-in");
+      print("Reach him via LinkedIn, or through the application channel for a role.");
+      print("Live site: <span class='t-cy'>https://TejaCyber.github.io/</span>");
+    },
+    neofetch: function(){
+      print("<span class='t-cy'>visitor@tejacyber</span>", "");
+      print("-------------------", "t-dim");
+      print("OS:        HumanOS 8.0 (years in service)");
+      print("Host:      Government cyber defence, New Delhi");
+      print("Kernel:    Threat Intelligence / IR");
+      print("Arms:      8 (all operational)");
+      print("Shell:     bash + Python + too much coffee");
+      print("Uptime:    8 years, 0 critical naps");
+      print("Focus:     <span class='t-vi'>AI Security — building</span>");
+    },
+    matrix: function(){
+      print("Wake up, Neo… (6 seconds — press any command after)", "t-gr");
+      if(!reduced) startMatrix(); else print("(matrix rain disabled: reduced-motion is on)", "t-dim");
+    },
+    coffee: function(){ print("☕ status: critical. Refill recommended before next hunt.", "t-or"); },
+    fortune: function(){ print("“The quieter the telemetry, the louder the persistence.” — someone in a SOC, probably", "t-vi"); },
+    clear: function(){ out.innerHTML = ""; },
+    exit: function(){ print("There is no escape. The octopus has eight arms.", "t-vi"); }
+  };
+  function run(raw){
+    var cmd = raw.trim();
+    echo(raw);
+    if(!cmd) return;
+    history.unshift(cmd); hIdx = -1;
+    var key = cmd.toLowerCase();
+    if(key === "sudo rm -rf /"){
+      print("Nice try. Deleting / …", "t-or");
+      print("rm: it is dangerous to operate recursively on '/'", "t-or");
+      print("rm: also, the octopus is holding / with three arms. Access denied.", "t-gr");
+      return;
+    }
+    if(key.indexOf("sudo") === 0){ print("visitor is not in the sudoers file. This incident will be reported to the octopus.", "t-or"); return; }
+    var fn = COMMANDS[key.split(" ")[0]];
+    if(fn) fn();
+    else print("command not found: " + cmd.replace(/</g,"&lt;") + " — type <span class='t-cy'>help</span>", "t-or");
+  }
+  print("<span class='t-cy'>TejaCyberOS</span> — portfolio terminal v2.0", "");
+  print("Type <span class='t-cy'>help</span> to see what this thing does. ↑/↓ for history.", "t-dim");
+  body.addEventListener("click", function(){ input.focus(); });
+  input.addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ run(input.value); input.value = ""; }
+    else if(e.key === "ArrowUp"){ e.preventDefault(); if(hIdx < history.length - 1){ hIdx++; input.value = history[hIdx] || ""; } }
+    else if(e.key === "ArrowDown"){ e.preventDefault(); if(hIdx > 0){ hIdx--; input.value = history[hIdx] || ""; } else { hIdx = -1; input.value = ""; } }
+    else if(e.key === "Tab"){ e.preventDefault(); var v = input.value.toLowerCase(); var names = Object.keys(COMMANDS).concat(["sudo rm -rf /"]); for(var i = 0; i < names.length; i++){ if(names[i].indexOf(v) === 0 && v){ input.value = names[i]; break; } } }
+  });
+  document.querySelectorAll(".cmd-chips button").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.getElementById("terminal").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+      run(b.getAttribute("data-cmd"));
+      input.focus();
+    });
+  });
+})();
+</script>
+</body>
+</html>
